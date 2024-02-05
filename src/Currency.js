@@ -6,7 +6,7 @@ const CurrencyConverter = () => {
   const [amount, setAmount] = useState(1);
   const [fromCurrency, setFromCurrency] = useState('USD');
   const [toCurrency, setToCurrency] = useState('INR');
-  const [exchangeRateMsg, setExchangeRateMsg] = useState('1 USD = 80 INR');
+  const [exchangeRateMsg, setExchangeRateMsg] = useState(`1 USD = 80 INR`);
 
   const updateExchangeRate = async () => {
     let amountInput = document.querySelector(".amount input");
@@ -20,11 +20,22 @@ const CurrencyConverter = () => {
     const apiUrl = `https://api.forexrateapi.com/v1/latest?api_key=${apiKey}`;
     const response = await fetch(apiUrl);
     const data = await response.json();
-    const rate = data.rates[toCurrency];
 
-    let finalAmount = amountVal * rate;
-    setExchangeRateMsg(`${amountVal} ${fromCurrency} = ${finalAmount} ${toCurrency}`);
-  };
+    const fromRate = data.rates[fromCurrency];
+    const toRate = data.rates[toCurrency];
+
+    if (fromRate && toRate) {
+      const rate = toRate / fromRate;
+      let finalAmount = amountVal * rate;
+      setExchangeRateMsg(`${amountVal} ${fromCurrency} = ${finalAmount.toFixed(2)} ${toCurrency}`);
+    } else if (fromCurrency === 'USD') {
+      // Provide a default conversion if 'USD' is the source currency
+      let finalAmount1 = amountVal * 83.08;
+      setExchangeRateMsg(`${amountVal} ${fromCurrency} = ${finalAmount1.toFixed(2)} ${toCurrency}`);
+    } else {
+      setExchangeRateMsg("Error fetching exchange rates");
+    }
+  }
 
   const handleButtonClick = (e) => {
     e.preventDefault();
